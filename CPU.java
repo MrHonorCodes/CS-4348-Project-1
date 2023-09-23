@@ -6,7 +6,7 @@ import java.util.Scanner;
 
 public class CustomCPU {
     static int programCounter = 0, stackPointer = 1000, instructionReg, accumulator, regX, regY, timerThreshold, instrCount = 0;
-    static int sysStackTop = 2000, usrStackTop = 1000;
+    static int sysStack = 2000, usrStack = 1000;
     
     static boolean isUserMode = true;
     static boolean isHandlingInterrupt = false;

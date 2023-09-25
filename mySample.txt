@@ -1,0 +1,93 @@
+// Load ASCII value of 'D' (68) into AC
+1  
+68  
+// Print 'D' to the screen
+9  
+2  
+
+// Load ASCII value of 'a' (97) into AC
+1  
+97  
+// Print 'a' to the screen
+9  
+2  
+
+// Load ASCII value of 'n' (110) into AC
+1  
+110  
+// Print 'n' to the screen
+9  
+2  
+
+// Load ASCII value of 'n' (110) into AC
+1  
+110  
+// Print 'n' to the screen
+9  
+2  
+
+// Load ASCII value of 'y' (121) into AC
+1  
+121  
+// Print 'y' to the screen
+9  
+2  
+
+// Load ASCII value of space (32) into AC
+1  
+32  
+// Print space to the screen
+9  
+2  
+
+// Continue with "Likes The Number " in a similar fashion...
+// Load ASCII value of 'L' (76) into AC
+1  
+76  
+// Print 'L' to the screen
+9  
+2  
+
+// Load ASCII value of 'i' (105) into AC
+1  
+105  
+// Print 'i' to the screen
+9  
+2  
+
+// Load ASCII value of 'k' (107) into AC
+1  
+107  
+// Print 'k' to the screen
+9  
+2  
+
+// Load ASCII value of 'e' (101) into AC
+1  
+101  
+// Print 'e' to the screen
+9  
+2  
+
+// Load ASCII value of 's' (115) into AC
+1  
+115  
+// Print 's' to the screen
+9  
+2  
+
+// Load ASCII value of space (32) into AC
+1  
+32  
+// Print space to the screen
+9  
+2  
+
+// Get a random integer into AC
+8  
+// Print the random integer as an int
+9  
+1  
+
+// End of program
+50  

@@ -1,0 +1,40 @@
+// Load ASCII value of 'D' (68) into AC
+1  
+68  
+// Print 'D' to the screen
+9  
+2  
+
+// Continue with "anny Likes The Number " in a similar fashion...
+
+// Get a random integer into AC
+8  
+// Print the random integer as an int
+9  
+1  
+
+// Load ASCII value of 'I' (73) into AC
+1  
+73  
+// Print 'I' to the screen
+9  
+2  
+
+// Load ASCII value of 's' (115) into AC
+1  
+115  
+// Print 's' to the screen
+9  
+2  
+
+// Load ASCII value of space (32) into AC
+1  
+32  
+// Print space to the screen
+9  
+2  
+
+// Continue with "it your lucky number today?" in a similar fashion...
+
+// End of program
+50  

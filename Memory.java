@@ -1,80 +1,76 @@
-import java.io.File;
+
 import java.io.FileNotFoundException;
 import java.util.Scanner;
+import java.io.File;
 
-public class MemStorage {
-    static int[] dataBank; // Static array for memory
+public class Memory {
 
-    public static void main(String[] args) {
-        if (args.length < 1) {
-            System.err.println("Insufficient arguments provided.");
-            System.exit(1);
-        }
+    private static final int[] dataBank = new int[2000];
 
-        String filePath = args[0];
+    public static void main(String[] cmdArgs) {
+        Scanner inputScanner = new Scanner(System.in);
+        File dataFile = null;
 
-        try {
-            initializeMemory(filePath);
-        } catch (FileNotFoundException e) {
-            System.err.println("File not found.");
-            System.exit(1);
-        }
-
-        Scanner userInput = new Scanner(System.in);
-
-        while (userInput.hasNextLine()) {
-            String inputLine = userInput.nextLine();
-            char action = inputLine.charAt(0);
-            int location, value;
-
-            switch (action) {
-                case 'r':
-                    location = Integer.parseInt(inputLine.substring(1));
-                    System.out.println(retrieve(location));
-                    break;
-                case 'w':
-                    String[] parameters = inputLine.substring(1).split(",");
-                    location = Integer.parseInt(parameters[0]);
-                    value = Integer.parseInt(parameters[1]);
-                    deposit(location, value);
-                    break;
-                case 'e':
-                    System.exit(0);
-                    break;
+        if (inputScanner.hasNextLine()) {
+            dataFile = new File(inputScanner.nextLine());
+            if (!dataFile.exists()) {
+                System.out.println("No such file.");
+                System.exit(0);
             }
         }
-        userInput.close();
+
+        populateDataBank(dataFile);
+
+        while (inputScanner.hasNext()) {
+            String instruction = inputScanner.nextLine();
+            if (!instruction.isEmpty()) {
+                executeInstruction(instruction);
+            }
+        }
     }
 
-    private static int retrieve(int address) {
+    private static void populateDataBank(File dataFile) {
+        try (Scanner fileScanner = new Scanner(dataFile)) {
+            int index = 0;
+            while (fileScanner.hasNext()) {
+                if (fileScanner.hasNextInt()) {
+                    dataBank[index++] = fileScanner.nextInt();
+                } else {
+                    String token = fileScanner.next();
+                    if (token.startsWith(".")) {
+                        index = Integer.parseInt(token.substring(1));
+                    } else if (token.equals("//")) {
+                        fileScanner.nextLine();
+                    } else {
+                        fileScanner.nextLine();
+                    }
+                }
+            }
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private static void executeInstruction(String instruction) {
+        String[] parts = instruction.split(",");
+        String action = parts[0];
+        int address, value;
+
+        if ("1".equals(action)) {
+            address = Integer.parseInt(parts[1]);
+            System.out.println(retrieveData(address));
+        } else {
+            address = Integer.parseInt(parts[1]);
+            value = Integer.parseInt(parts[2]);
+            storeData(address, value);
+        }
+    }
+
+    private static int retrieveData(int address) {
         return dataBank[address];
     }
 
-    private static void deposit(int address, int data) {
-        dataBank[address] = data;
-    }
-
-    private static void initializeMemory(String path) throws FileNotFoundException {
-        dataBank = new int[2000];
-        Scanner fileScanner = new Scanner(new File(path));
-        int index = 0;
-
-        while (fileScanner.hasNextLine()) {
-            String line = fileScanner.nextLine().trim();
-            if (line.isEmpty()) continue;
-
-            if (line.charAt(0) == '.') {
-                index = Integer.parseInt(line.substring(1).split("\\s+")[0]);
-                continue;
-            }
-
-            if (!Character.isDigit(line.charAt(0))) continue;
-
-            String[] parts = line.split("\\s+");
-            if (parts.length < 1) continue;
-
-            dataBank[index++] = Integer.parseInt(parts[0]);
-        }
-        fileScanner.close();
+    private static void storeData(int address, int value) {
+        dataBank[address] = value;
     }
 }

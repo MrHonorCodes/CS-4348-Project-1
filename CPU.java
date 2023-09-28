@@ -1,131 +1,94 @@
-package project1;
-
-import java.io.*;
-import java.util.Random;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.Scanner;
 
-public class CustomCPU {
-    static int programCounter = 0, stackPointer = 1000, instructionReg, accumulator, regX, regY, timerThreshold, instrCount = 0;
-    static int sysStack = 2000, usrStack = 1000;
-    
-    static boolean isUserMode = true;
-    static boolean isHandlingInterrupt = false;
+public class CPU {
+
+    private static int accumulator = 0;
+    private static int xRegister = 0;
+    private static int yRegister = 0;
+    private static int stackPointer = 1000;
+    private static Scanner memScanner = new Scanner(System.in);
 
     public static void main(String[] args) {
-        String inputFileName = null;
-        
-        if(args.length == 2) {
-            inputFileName = args[0];
-            timerThreshold = Integer.parseInt(args[1]);
-        } else {
-            System.out.println("Invalid number of arguments. Exiting.");
-            System.exit(0);
-        }
+        PrintWriter memWriter = new PrintWriter(System.out, true);
 
-        try {
-            Runtime runtime = Runtime.getRuntime();
-            Process memoryProcess = runtime.exec("java Memory");
-            
-            OutputStream outStream = memoryProcess.getOutputStream();
-            PrintWriter printWriter = new PrintWriter(outStream);
-            
-            InputStream inStream = memoryProcess.getInputStream();
-            Scanner memScanner = new Scanner(inStream);
-            
-            sendFileNameToMemory(printWriter, inStream, outStream, inputFileName);
-            
-            while (true) {
-                if(instrCount > 0 && (instrCount % timerThreshold) == 0 && !isHandlingInterrupt) {
-                    handleTimerInterrupt(printWriter, inStream, memScanner, outStream);
-                }
-                
-                int fetchedValue = fetchFromMemory(printWriter, inStream, memScanner, outStream, programCounter);
-                
-                if (fetchedValue != -1) {
-                    executeInstruction(fetchedValue, printWriter, inStream, memScanner, outStream);
-                } else {
-                    break;
-                }
-            }
-            
-            memoryProcess.waitFor();
-            int exitCode = memoryProcess.exitValue();
-            System.out.println("Process exited with code: " + exitCode);
-        } catch (IOException | InterruptedException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private static void sendFileNameToMemory(PrintWriter pw, InputStream is, OutputStream os, String fileName) {
-        pw.println(fileName);
-        pw.flush();
-    }
-
-    private static int fetchFromMemory(PrintWriter pw, InputStream is, Scanner memScanner, OutputStream os, int addr) {
-        validateMemoryAccess(addr);
-        pw.println("1," + addr);
-        pw.flush();
-        if (memScanner.hasNext()) {
-            String temp = memScanner.next();
-            if(!temp.isEmpty()) {
-                return Integer.parseInt(temp);
-            }
-        }
-        return -1;
-    }
-
-    private static void writeToMemory(PrintWriter pw, InputStream is, OutputStream os, int addr, int data) {
-        pw.println("2," + addr + "," + data);
-        pw.flush();
-    }
-
-    private static void executeInstruction(int fetchedValue, PrintWriter pw, InputStream is, Scanner memScanner, OutputStream os) {
-        instructionReg = fetchedValue;
-        int operand;
-        
-        switch(instructionReg) {
-            case 1:
-                programCounter++;
-                operand = fetchFromMemory(pw, is, memScanner, os, programCounter);
-                accumulator = operand;
-                if(!isHandlingInterrupt) instrCount++;
-                programCounter++;
+        while (true) {
+            String instruction = memScanner.nextLine();
+            if (instruction.isEmpty()) {
                 break;
-            // ... (other cases)
-            default:
-                System.out.println("Unknown instruction.");
+            }
+            executeCommand(instruction, memWriter);
+        }
+    }
+    private static void executeCommand(String instruction, PrintWriter memWriter) {
+        String[] tokens = instruction.split(",");
+        int command = Integer.parseInt(tokens[0]);
+        int operand = tokens.length > 1 ? Integer.parseInt(tokens[1]) : 0;
+
+        switch (command) {
+            case 1:
+                accumulator = operand;
+                break;
+            case 2:
+                memWriter.println("1," + operand);
+                accumulator = Integer.parseInt(memScanner.nextLine());
+                break;
+            case 3:
+                memWriter.println("1," + operand);
+                int indirectAddr = Integer.parseInt(memScanner.nextLine());
+                memWriter.println("1," + indirectAddr);
+                accumulator = Integer.parseInt(memScanner.nextLine());
+                break;
+            case 4:
+                memWriter.println("1," + (operand + xRegister));
+                accumulator = Integer.parseInt(memScanner.nextLine());
+                break;
+            case 5:
+                memWriter.println("1," + (operand + yRegister));
+                accumulator = Integer.parseInt(memScanner.nextLine());
+                break;
+            case 6:
+                accumulator = stackPointer + xRegister;
+                break;
+            case 7:
+                memWriter.println("2," + operand + "," + accumulator);
+                break;
+            case 8:
+                accumulator = (int) (Math.random() * 100) + 1;
+                break;
+            case 9:
+                if (operand == 1) {
+                    System.out.print(accumulator);
+                } else {
+                    System.out.print((char) accumulator);
+                }
+                break;
+            case 10:
+                accumulator += xRegister;
+                break;
+            case 11:
+                accumulator += yRegister;
+                break;
+            case 14:
+                xRegister = accumulator;
+                break;
+            case 16:
+                yRegister = accumulator;
+                break;
+            case 20:
+                memWriter.println("3," + operand);
+                break;
+            case 21:
+                if (accumulator == 0) {
+                    memWriter.println("3," + operand);
+                }
+                break;
+            case 50:
                 System.exit(0);
+                break;
+            default:
+                System.out.println("Unknown command");
         }
-    }
-
-    private static void validateMemoryAccess(int addr) {
-        if(isUserMode && addr > 1000) {
-            System.out.println("Memory violation. Exiting.");
-            System.exit(0);
-        }
-    }
-
-    private static void handleTimerInterrupt(PrintWriter pw, InputStream is, Scanner memScanner, OutputStream os) {
-        isHandlingInterrupt = true;
-        isUserMode = false;
-        int tempSP = stackPointer;
-        stackPointer = sysStackTop;
-        pushToStack(pw, is, os, tempSP);
-        
-        int tempPC = programCounter;
-        programCounter = 1000;
-        pushToStack(pw, is, os, tempPC);
-    }
-
-    private static void pushToStack(PrintWriter pw, InputStream is, OutputStream os, int value) {
-        stackPointer--;
-        writeToMemory(pw, is, os, stackPointer, value);
-    }
-
-    private static int popFromStack(PrintWriter pw, InputStream is, Scanner memScanner, OutputStream os) {
-        int value = fetchFromMemory(pw, is, memScanner, os, stackPointer);
-        writeToMemory(pw, is, os, stackPointer, 0);
-        stackPointer++;
-        return value;
     }
 }

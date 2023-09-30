@@ -15,7 +15,7 @@ public class Memory {
             initializeMemory(inputFilePath);
         } catch (FileNotFoundException e) {
             System.err.println("File not found: " + inputFilePath);
-            System.exit(1);
+            System.exit(0);
         }
 
         handleMemoryOperations();
@@ -24,7 +24,7 @@ public class Memory {
     private static void validateInputArguments(String[] args) {
         if (args.length < 1) {
             System.err.println("Usage: java Memory <input-file-path>");
-            System.exit(1);
+            System.exit(0);
         }
     }
 
@@ -58,14 +58,18 @@ public class Memory {
                 switch (command) {
                     case "R": // read
                         address = Integer.parseInt(line.substring(1));
-                        System.out.println(readMemory(address));
+                        if (isValidAddress(address)) {
+                            System.out.println(readMemory(address));
+                        }
                         break;
 
                     case "W": // write
                         String[] params = line.substring(1).split(",");
                         address = Integer.parseInt(params[0]);
                         data = Integer.parseInt(params[1]);
-                        writeMemory(address, data);
+                        if (isValidAddress(address)) {
+                            writeMemory(address, data);
+                        }
                         break;
 
                     case "E": // exit
@@ -74,7 +78,13 @@ public class Memory {
             }
         }
     }
-
+    private static boolean isValidAddress(int address) {
+        if (address < 0 || address >= MEMORY_SIZE) {
+            System.err.println("Invalid memory address.");
+            return false;
+        }
+        return true;
+    }
     private static int readMemory(int address) {
         return memory[address];
     }

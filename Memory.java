@@ -52,23 +52,23 @@ public class Memory {
         try (Scanner inputScanner = new Scanner(System.in)) {
             while (inputScanner.hasNextLine()) {
                 String line = inputScanner.nextLine();
-                char command = line.charAt(0);
+                String command = line.substring(0, 1);
                 int address, data;
 
                 switch (command) {
-                    case 'R': // read
+                    case "R": // read
                         address = Integer.parseInt(line.substring(1));
                         System.out.println(readMemory(address));
                         break;
 
-                    case 'W': // write
+                    case "W": // write
                         String[] params = line.substring(1).split(",");
                         address = Integer.parseInt(params[0]);
                         data = Integer.parseInt(params[1]);
                         writeMemory(address, data);
                         break;
 
-                    case 'E': // exit
+                    case "E": // exit
                         System.exit(0);
                 }
             }

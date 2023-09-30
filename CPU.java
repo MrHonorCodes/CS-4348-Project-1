@@ -4,15 +4,15 @@ import java.util.Scanner;
 
 public class CPU
 {
-    private int PC, SP, IR, AC, X, Y;
-    private int timer;
+    private int PC, SP, IR, AC, X, Y, timer, myTimeout;
     private boolean kernelMode;
     private Scanner memoryIn;
     private PrintWriter memoryOut;
-
-    public CPU(Scanner memoryIn, PrintWriter memoryOut) {
+	
+    public CPU(Scanner memoryIn, PrintWriter memoryOut, int myTimeout) {
         this.memoryIn = memoryIn;
         this.memoryOut = memoryOut;
+		this.myTimeout = myTimeout;
         kernelMode = false;
         PC = IR = AC = X = Y = timer = 0;
         SP = 1000;
@@ -25,12 +25,14 @@ public class CPU
 			System.out.println("Argument in CPU: " + arg);
 		}
 		*/
-        if (args.length < 1) {
+        if (args.length < 2) {
             System.err.println("Not enough arguments");
             System.exit(0);
         }
 
         String programInput = args[0];
+		int myTimeout = Integer.parseInt(args[1]);  // Assumes the second command-line argument is the timeout value
+
 		//System.out.println("Program Input: " + programInput);
 
 		try {
@@ -39,8 +41,8 @@ public class CPU
 
             Scanner memoryIn = new Scanner(memory.getInputStream());
             PrintWriter memoryOut = new PrintWriter(memory.getOutputStream());
-            CPU cpu = new CPU(memoryIn, memoryOut);
-            cpu.run();
+            CPU process = new CPU(memoryIn, memoryOut, myTimeout);
+            process.run();
         } catch (IOException exp) {
             exp.printStackTrace();  // This will print the stack trace to standard error
             System.err.println("Unable to create new process.");
@@ -67,7 +69,6 @@ public class CPU
         public void run()
         {
             boolean running = true;
-            int myTimeout = 100;  // Replace this with whatever value makes sense for your application.
             while(running)
             {
 				IR = readMemory(PC++);

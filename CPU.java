@@ -1,7 +1,5 @@
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.PrintWriter;
+import java.io.*;
 import java.util.Scanner;
 
 public class CPU
@@ -29,38 +27,26 @@ public class CPU
 		*/
         if (args.length < 1) {
             System.err.println("Not enough arguments");
-            System.exit(1);
+            System.exit(0);
         }
 
         String programInput = args[0];
 		//System.out.println("Program Input: " + programInput);
 
-        try {
+		try {
             ProcessBuilder builder = new ProcessBuilder("java", "Memory", programInput);
             Process memory = builder.start();
-
-            final InputStream error = memory.getErrorStream();
-            new Thread(() -> {
-                byte[] buffer = new byte[8192];
-                int length;
-                try {
-                    while ((length = error.read(buffer)) > 0) {
-                        System.err.write(buffer, 0, length);
-                    }
-                } catch (IOException exp) {
-                    exp.printStackTrace();
-                }
-            }).start();
 
             Scanner memoryIn = new Scanner(memory.getInputStream());
             PrintWriter memoryOut = new PrintWriter(memory.getOutputStream());
             CPU cpu = new CPU(memoryIn, memoryOut);
             cpu.run();
         } catch (IOException exp) {
-            exp.printStackTrace();
+            exp.printStackTrace();  // This will print the stack trace to standard error
             System.err.println("Unable to create new process.");
-            System.exit(1);
+            System.exit(0);
         }
+
     }
     /* 
 		private void fetch()
@@ -114,10 +100,10 @@ public class CPU
 
 		private int readMemory(int address)
 		{
-			if(address >= 1000 && !kernelMode)
+			if(!kernelMode && address >= 1000 )
 			{
 				System.err.println("Memory violation: accessing system address " + address + " in user mode");
-				System.exit(-1);
+				System.exit(0);
 			}
 			memoryOut.println("R"+address);
 			memoryOut.flush();

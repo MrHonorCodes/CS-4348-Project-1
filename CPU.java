@@ -119,20 +119,20 @@ public class CPU
 				System.err.println("Memory violation: accessing system address " + address + " in user mode");
 				System.exit(-1);
 			}
-			memoryOut.println("r"+address);
+			memoryOut.println("R"+address);
 			memoryOut.flush();
 			return Integer.parseInt(memoryIn.nextLine());
 		}
 		
 		private void writeMemory(int address, int data)
 		{
-			memoryOut.printf("w%d,%d\n", address, data);
+			memoryOut.printf("W%d,%d\n", address, data);
 			memoryOut.flush();
 		}
 		
 		private void endMemoryProcess()
 		{
-			memoryOut.println("e");
+			memoryOut.println("E");
 			memoryOut.flush();
 		}
 

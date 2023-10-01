@@ -5,6 +5,7 @@ import java.util.Random;
 public class CPU {
     // Declare CPU registers and other essential variables
 
+
     private int programCounter = 0, stackPointer = 1000, instructionRegister, accumulator, regX, regY, timer = 0, timerFlag;
     private boolean kernelMode;
     private Scanner memIn;
@@ -25,8 +26,9 @@ public class CPU {
         }
 
         // Parse the input program and timeout values
-        String programInput = args[0];
+        String fileName = args[0];
         int myTimeout = Integer.parseInt(args[1]);
+        Runtime rt = Runtime.getRuntime(); // exec method is deprecated, use ProcessBuilder instead
 
         // Validate timeout value
         try {
@@ -41,8 +43,9 @@ public class CPU {
 
         // Create a new Memory process and start executing the program
         try {
-            ProcessBuilder builder = new ProcessBuilder("java", "Memory", programInput);
-            Process memory = builder.start();
+            Process memory = rt.exec("java Memory" + fileName); // exec method is deprecated, use ProcessBuilder instead
+                // replacement for rt.exec
+            // ProcessBuilder rt = new ProcessBuilder("java", "Memory", fileName);
             Scanner memIn = new Scanner(memory.getInputStream());
             PrintWriter memOut = new PrintWriter(memory.getOutputStream());
             CPU process = new CPU(memIn, memOut, myTimeout);
@@ -92,6 +95,7 @@ public class CPU {
         stackPointer = 2000;
         pushToStack(tempStackPointer);
         pushToStack(programCounter);
+
     }
 
     // Method to read from memory

@@ -1,0 +1,30 @@
+.0
+1   // Load "(" (ASCII 40)
+40
+9   // Output as char
+2
+1   // Load "\" (ASCII 92)
+92
+9   // Output as char
+2
+1   // Load "_" (ASCII 95)
+95
+9   // Output as char
+2
+1   // Load "_" (ASCII 95)
+95
+9   // Output as char
+2
+1   // Load "/" (ASCII 47)
+47
+9   // Output as char
+2
+1   // Load ")" (ASCII 41)
+41
+9   // Output as char
+2
+//23  // Call newline (commented out)
+50  // End
+
+.1000
+30  // Interrupt handler - just return

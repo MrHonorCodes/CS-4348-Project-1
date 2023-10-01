@@ -28,7 +28,6 @@ public class CPU {
         // Parse the input program and timeout values
         String fileName = args[0];
         int myTimeout = Integer.parseInt(args[1]);
-        Runtime rt = Runtime.getRuntime(); // exec method is deprecated, use ProcessBuilder instead
 
         // Validate timeout value
         try {
@@ -43,9 +42,11 @@ public class CPU {
 
         // Create a new Memory process and start executing the program
         try {
+            Runtime rt = Runtime.getRuntime(); // exec method is deprecated, use ProcessBuilder instead
             Process memory = rt.exec("java Memory" + fileName); // exec method is deprecated, use ProcessBuilder instead
                 // replacement for rt.exec
             // ProcessBuilder rt = new ProcessBuilder("java", "Memory", fileName);
+            //Process mem = builder.start();
             Scanner memIn = new Scanner(memory.getInputStream());
             PrintWriter memOut = new PrintWriter(memory.getOutputStream());
             CPU process = new CPU(memIn, memOut, myTimeout);

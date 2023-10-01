@@ -1,145 +1,115 @@
-
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.Scanner;
 
-/**
- *
- * Devang Mistry
- * Memory class will read the instructions from the file, initialize the 
- * memory array and communicate with the CPU
- */
+public class Memory {
 
-public class Memory
-{   
-    final static int [] memory = new int[2000]; // int array to implement memory
-    
-    public static void main(String args[])
-    {
-        try
-        {
-            //Create a File object and a scanner to read it
-            Scanner CPU_reader = new Scanner(System.in);
-            File file = null;
-            if(CPU_reader.hasNextLine())    // read file name from CPU
-            {
-                file = new File(CPU_reader.nextLine());
-                
-                if(!file.exists()) //exit if file not found
-                {
-                    System.out.println("File not found");
-                    System.exit(0);
-                }
-            }
-            
-            // call function to read file and initialize memory array
-            readFile(file);
+    // Declare constants and variables
+    private static final int MEMORY_SIZE = 2000;
+    private static int[] memory;
 
-            String line;
-            int temp2;
-            /*
-                This while loop will keep on reading instructions from the CPU process
-                and perform the read or write function appropriately
-            */
-            while(true)
-            {
-                if(CPU_reader.hasNext())
-                {
-                    line = CPU_reader.nextLine(); //read the comma delimited line sent by the CPU
-                    if(!line.isEmpty())
-                    {
-                        String [] j = line.split(","); //split the line to get the necessary tokens
-                        
-                        //  if first token is 1 then CPU is requesting to read 
-                        //  from an address
-                        if(j[0].equals("1"))    
-                        {
-                            temp2 = Integer.parseInt(j[1]);
-                            System.out.println(read(temp2));// send requested data to CPU 
-                        }
-                        
-                        //  else it will be 2, which means CPu is requesting to 
-                        //  write data at a particular address
-                        else
-                        {
-                            int i1 = Integer.parseInt(j[1]);
-                            int i2 = Integer.parseInt(j[2]);
-                            write(i1,i2); // invoke the write function
-                        }
-                    }
-                    else 
-                        break;
-                }
-                else
-                    break;
-            }
-            
-        } catch(NumberFormatException e)
-        {
-            e.printStackTrace();
+    // Main function
+    public static void main(String[] args) {
+        // Validate the input arguments
+        validateInputArguments(args);
+        
+        // Get the file path from the arguments
+        String filePath = args[0];
+        
+        // Initialize memory from file
+        try {
+            initializeMemory(filePath);
+        } catch (FileNotFoundException e) {
+            System.err.println("File not found: " + filePath);
+            System.exit(0);
         }
-
+        
+        // Handle memory read and write operations
+        handleMemoryOperations();
     }
-    
-    // function to read the data in the address provided by the CPU
-    public static int read(int address)
-    {
+
+    // Function to validate input arguments
+    private static void validateInputArguments(String[] args) {
+        if (args.length < 1) {
+            System.err.println("Please provide the input file path.");
+            System.exit(0);
+        }
+    }
+
+    // Initialize memory from file
+    private static void initializeMemory(String filePath) throws FileNotFoundException {
+        memory = new int[MEMORY_SIZE];
+        
+        // Use a try-with-resources block to auto-close the Scanner
+        try (Scanner scanner = new Scanner(new File(filePath))) {
+            int addr = 0;
+            while (scanner.hasNextLine()) {
+                String line = scanner.nextLine().trim();
+                
+                // Skip empty lines
+                if (line.isEmpty()){
+                    continue;
+                }
+                
+                // Detect and set address label
+                if (line.startsWith(".")) {
+                    addr = Integer.parseInt(line.substring(1).split("\\s+")[0]);
+                    continue;
+                }
+                
+                // Parse and store memory data
+                if (Character.isDigit(line.charAt(0))) {
+                    memory[addr++] = Integer.parseInt(line.split("\\s+")[0]);
+                }
+            }
+        }
+    }
+
+    // Function to handle memory operations
+    private static void handleMemoryOperations() {
+        try (Scanner inputScanner = new Scanner(System.in)) {
+            while (inputScanner.hasNextLine()) {
+                String line = inputScanner.nextLine();
+                String instruction = line.substring(0, 1);
+                int addr, val;
+                
+                // Switch based on the operation type
+                switch (instruction) {
+                    case "R": // Read operation
+                        addr = Integer.parseInt(line.substring(1));
+                        if (isValidAddress(addr)) {
+                            System.out.println(readMemory(addr));
+                        }
+                        break;
+                    case "W": // Write operation
+                        String[] params = line.substring(1).split(",");
+                        addr = Integer.parseInt(params[0]);
+                        val = Integer.parseInt(params[1]);
+                        if (isValidAddress(addr)) {
+                            writeMemory(addr, val);
+                        }
+                        break; 
+                }
+            }
+        }
+    }
+
+    // Function to check if an address is valid
+    private static boolean isValidAddress(int address) {
+        if (address < 0 || address >= MEMORY_SIZE) {
+            System.err.println("Invalid memory address.");
+            return false;
+        }
+        return true;
+    }
+
+    // Function to read from a memory address
+    private static int readMemory(int address) {
         return memory[address];
     }
-    
-    // function to write data into an address based on intruction given by CPU
-    public static void write(int address, int data)
-    {
+
+    // Function to write to a memory address
+    private static void writeMemory(int address, int data) {
         memory[address] = data;
     }
-
-    // function to read instructions from file and initialize memory
-    private static void readFile(File file) {
-        
-        try 
-        {
-            Scanner scanner = new Scanner(file);
-            String temp;
-            int temp_int;
-            int i = 0;
-
-            /*
-            *   Read the file to load memory instructions
-            */
-            while(scanner.hasNext())
-            {
-                //if integer found then write to memory array
-                if(scanner.hasNextInt())
-                {
-                    temp_int = scanner.nextInt();
-                    memory[i++] = temp_int;
-                }
-                else
-                {
-                    temp = scanner.next();
-                    // if token starts with ".", then move the counter appropriately
-                    if(temp.charAt(0) == '.')
-                    {
-                        i = Integer.parseInt(temp.substring(1));
-                    }
-                    
-                    // else if the token is a comment then skip the line
-                    else if(temp.equals("//"))
-                    {
-                        scanner.nextLine();
-                    }
-                    
-                    // skip the line if anything else
-                    else
-                        scanner.nextLine();
-                }
-            }
-        } 
-        catch (FileNotFoundException ex) 
-        {
-            ex.printStackTrace();
-        }
-        
-    }
-
 }
